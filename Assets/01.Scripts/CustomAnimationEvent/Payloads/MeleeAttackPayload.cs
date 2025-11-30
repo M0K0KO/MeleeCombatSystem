@@ -4,8 +4,8 @@ using UnityEngine;
 [Serializable]
 public class MeleeAttackPayload : EventPayload
 {
-    public string hitboxName;
-    public bool isGoingToEnable;
+    [SerializeField] public string hitboxName;
+    [SerializeField] public bool isGoingToEnable;
 
     private Collider hitBox;
 

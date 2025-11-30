@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Unity.Collections;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEditor.Animations;
@@ -317,7 +319,7 @@ public class AnimationEventStateBehaviourEditor : Editor
                                                     payload.managedReferenceValue.GetType().Name.Replace("Payload", "")
                                                 );
                                                 payload.isExpanded =
-                                                    EditorGUILayout.Foldout(payload.isExpanded, className, true);
+                                                    EditorGUILayout.Foldout(payload.isExpanded, className);
 
                                                 GUILayout.FlexibleSpace();
                                                 if (GUILayout.Button("X", GUILayout.Width(20)))
@@ -336,17 +338,36 @@ public class AnimationEventStateBehaviourEditor : Editor
                                         {
                                             EditorGUI.indentLevel++;
                                             {
-                                                SerializedProperty copy = payload.Copy();
-                                                SerializedProperty end = payload.GetEndProperty();
+                                                object boxed = payload.managedReferenceValue;
 
-                                                bool enterChildren = true;
-
-                                                while (copy.NextVisible(enterChildren) &&
-                                                       !SerializedProperty.EqualContents(copy, end))
+                                                if (boxed == null)
                                                 {
-                                                    Debug.Log("Fucked");
-                                                    enterChildren = false;
-                                                    EditorGUILayout.PropertyField(copy, true);
+                                                    EditorGUILayout.HelpBox("Payload is null", MessageType.Warning);
+                                                }
+                                                else
+                                                {
+                                                    Type payloadType = boxed.GetType();
+
+                                                    FieldInfo[] fields = payloadType.GetFields(
+                                                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                                                    foreach (FieldInfo field in fields)
+                                                    {
+                                                        bool isPublicSerialized =
+                                                            field.IsPublic && !Attribute.IsDefined(field, typeof(NonSerializedAttribute), true);
+                                                        bool hasSerializeField =
+                                                            Attribute.IsDefined(field, typeof(SerializeField), true);
+
+                                                        if (!isPublicSerialized && !hasSerializeField)
+                                                            continue;
+
+                                                        SerializedProperty fieldProp = payload.FindPropertyRelative(field.Name);
+                                                        if (fieldProp == null)
+                                                            continue;
+
+                                                        string niceName = ObjectNames.NicifyVariableName(field.Name);
+                                                        EditorGUILayout.PropertyField(fieldProp, new GUIContent(niceName), true);
+                                                    }
                                                 }
                                             }
                                             EditorGUI.indentLevel--;

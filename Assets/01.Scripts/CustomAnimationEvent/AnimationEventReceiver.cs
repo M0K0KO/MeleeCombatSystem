@@ -28,6 +28,16 @@ public class AnimationEventReceiver : MonoBehaviour
             hitBoxesDictionary.Add(hitBox.name, hitBox.hitBox);
         }
     }
-    
-    public Collider GetHitBox(string name) => hitBoxesDictionary[name];
+
+    public Collider GetHitBox(string name)
+    {
+        if (hitBoxesDictionary.TryGetValue(name, out Collider collider))
+        {
+            return collider;
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

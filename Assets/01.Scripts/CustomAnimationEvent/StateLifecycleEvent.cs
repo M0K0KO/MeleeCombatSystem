@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class TimeLineEvent
+public class StateLifecycleEvent
 {
-    public string name = "New Event";
-    [Range(0f, 1f)] public float time;
+    public string name;
+    public EventTriggerType triggerType;
     [SerializeReference] public List<EventPayload> payloads = new List<EventPayload>();
-
+    
     public void Execute(AnimationEventReceiver receiver)
     {
         foreach (var payload in payloads)
@@ -16,4 +16,11 @@ public class TimeLineEvent
             if (payload != null) payload.Execute(receiver);
         }
     }
+}
+
+[Serializable]
+public enum EventTriggerType
+{
+    OnEnter,
+    OnExit,
 }

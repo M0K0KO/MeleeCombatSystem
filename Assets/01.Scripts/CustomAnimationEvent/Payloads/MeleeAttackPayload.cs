@@ -12,6 +12,11 @@ public class MeleeAttackPayload : EventPayload
     public override void Execute(AnimationEventReceiver receiver)
     {
         if (hitBox == null) hitBox = receiver.GetHitBox(hitboxName);
+        if (hitBox == null)
+        {
+            Debug.Log("HitBox Not Found");
+            return;
+        }
         
         hitBox.enabled = isGoingToEnable;
     }
